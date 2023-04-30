@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'src/locations.dart' as locations;
+import 'src/valenbisiLoc.dart' as valenbisiLoc;
 
 import 'main.dart';
 
@@ -10,26 +11,23 @@ class MyMapPage extends StatefulWidget {
 }
 
 class _MyMapPageState extends State<MyMapPage> {
-  // late GoogleMapController mapController;
   final Map<String, Marker> _markers = {};
 
-  // final LatLng _center = const LatLng(45.521563, -122.677433);
-
   Future<void> _onMapCreated(GoogleMapController controller) async {
-    // mapController = controller;
-    final googleOffices = await locations.getGoogleOffices();
+    final valenBisi = await valenbisiLoc.getValenBisi();
     setState(() {
       _markers.clear();
-      for (final office in googleOffices.offices) {
+      for (final station in valenBisi.features) {
         final marker = Marker(
-          markerId: MarkerId(office.name),
-          position: LatLng(office.lat, office.lng),
+          markerId: MarkerId(station.properties.nombre),
+          position: LatLng(
+              station.geometry.coordinates[1], station.geometry.coordinates[0]),
           infoWindow: InfoWindow(
-            title: office.name,
-            snippet: office.address,
+            title: station.properties.nombre,
+            snippet: station.properties.nombre,
           ),
         );
-        _markers[office.name] = marker;
+        _markers[station.properties.nombre] = marker;
       }
     });
   }

@@ -1,117 +1,140 @@
-// import 'dart:convert';
-// import 'dart:ffi';
+import 'dart:convert';
+import 'dart:ffi';
 
-// import 'package:flutter/foundation.dart';
-// import 'package:flutter/services.dart' show rootBundle;
-// import 'package:http/http.dart' as http;
-// import 'package:json_annotation/json_annotation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
+import 'package:json_annotation/json_annotation.dart';
 
-// // part 'valenbisiLoc.g.dart';
+part 'valenbisiLoc.g.dart';
 
-// @JsonSerializable()
-// class Geometry {
-//   Geometry({
-//     required this.coordinates,
-//     required this.type,
-//   });
+@JsonSerializable()
+class Feature {
+  final String type;
+  final Geometry geometry;
+  final Properties properties;
 
-//   final String type;
-//   List<double> coordinates;
-// }
+  Feature({
+    required this.type,
+    required this.geometry,
+    required this.properties,
+  });
 
-// // @JsonSerializable()
-// // class LatLng {
-// //   // LatLng({
-// //   //   required this.lat,
-// //   //   required this.lng,
-// //   // });
+  factory Feature.fromJson(Map<String, dynamic> json) =>
+      _$FeatureFromJson(json);
+  Map<String, dynamic> toJson() => _$FeatureToJson(this);
+}
 
-// //   // factory LatLng.fromJson(Map<String, dynamic> json) => _$LatLngFromJson(json);
-// //   // Map<String, dynamic> toJson() => _$LatLngToJson(this);
+@JsonSerializable()
+class Geometry {
+  final String type;
+  final List<double> coordinates;
 
-// //   final double lat;
-// //   final double lng;
-// // }
+  Geometry({
+    required this.type,
+    required this.coordinates,
+  });
 
-// @JsonSerializable()
-// class Region {
-//   Region({
-//     required this.coords,
-//     required this.id,
-//     required this.name,
-//     required this.zoom,
-//   });
+  factory Geometry.fromJson(Map<String, dynamic> json) =>
+      _$GeometryFromJson(json);
+  Map<String, dynamic> toJson() => _$GeometryToJson(this);
+}
 
-//   // factory Region.fromJson(Map<String, dynamic> json) => _$RegionFromJson(json);
-//   // Map<String, dynamic> toJson() => _$RegionToJson(this);
+@JsonSerializable()
+class Properties {
+  final String id;
+  final String nombre;
+  final String seccion;
+  final String fallera;
+  final String presidente;
+  final String artista;
+  final String lema;
+  final String boceto;
+  final String grpro;
+  final String proteccion;
+  final String grins;
+  final String orden;
+  final String hora;
+  final String seccion_i;
+  final String fallera_i;
+  final String presidente_i;
+  final String artista_i;
+  final String lema_i;
+  final String anyo_fundacion;
+  final String anyo_fundacion_i;
+  final String distintivo;
+  final String distintivo_i;
+  final String sector;
+  final String boceto_i;
 
-//   final LatLng coords;
-//   final String id;
-//   final String name;
-//   final double zoom;
-// }
+  Properties({
+    required this.id,
+    required this.nombre,
+    required this.seccion,
+    required this.fallera,
+    required this.presidente,
+    required this.artista,
+    required this.lema,
+    required this.boceto,
+    required this.grpro,
+    required this.proteccion,
+    required this.grins,
+    required this.orden,
+    required this.hora,
+    required this.seccion_i,
+    required this.fallera_i,
+    required this.presidente_i,
+    required this.artista_i,
+    required this.lema_i,
+    required this.anyo_fundacion,
+    required this.anyo_fundacion_i,
+    required this.distintivo,
+    required this.distintivo_i,
+    required this.sector,
+    required this.boceto_i,
+  });
 
-// @JsonSerializable()
-// class Office {
-//   Office({
-//     required this.address,
-//     required this.id,
-//     required this.image,
-//     required this.lat,
-//     required this.lng,
-//     required this.name,
-//     required this.phone,
-//     required this.region,
-//   });
+  factory Properties.fromJson(Map<String, dynamic> json) =>
+      _$PropertiesFromJson(json);
+  Map<String, dynamic> toJson() => _$PropertiesToJson(this);
+}
 
-//   // factory Office.fromJson(Map<String, dynamic> json) => _$OfficeFromJson(json);
-//   // Map<String, dynamic> toJson() => _$OfficeToJson(this);
+@JsonSerializable()
+class Stations {
+  final String type;
+  final List<Feature> features;
 
-//   final String address;
-//   final String id;
-//   final String image;
-//   final double lat;
-//   final double lng;
-//   final String name;
-//   final String phone;
-//   final String region;
-// }
+  Stations({
+    required this.type,
+    required this.features,
+  });
 
-// @JsonSerializable()
-// class Locations {
-//   Locations({
-//     required this.offices,
-//     required this.regions,
-//   });
+  factory Stations.fromJson(Map<String, dynamic> json) =>
+      _$StationsFromJson(json);
+  Map<String, dynamic> toJson() => _$StationsToJson(this);
+}
 
-//   // factory Locations.fromJson(Map<String, dynamic> json) =>
-//   //     _$LocationsFromJson(json);
-//   // Map<String, dynamic> toJson() => _$LocationsToJson(this);
+Future<Stations> getValenBisi() async {
+  const valenBisiURL =
+      'https://mapas.valencia.es/lanzadera/opendata/Monumentos_falleros/JSON?srsName=EPSG:4326';
 
-//   final List<Office> offices;
-//   final List<Region> regions;
-// }
+  // Retrieve the locations of Google offices
+  try {
+    final response = await http.get(Uri.parse(valenBisiURL));
+    if (response.statusCode == 200) {
+      return Stations.fromJson(
+          json.decode(response.body) as Map<String, dynamic>);
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print(e);
+    }
+  }
 
-// Future<Locations> getGoogleOffices() async {
-//   const googleLocationsURL = 'https://about.google/static/data/locations.json';
-
-//   // Retrieve the locations of Google offices
-//   try {
-//     final response = await http.get(Uri.parse(googleLocationsURL));
-//     if (response.statusCode == 200) {
-//       return Locations.fromJson(
-//           json.decode(response.body) as Map<String, dynamic>);
-//     }
-//   } catch (e) {
-//     if (kDebugMode) {
-//       print(e);
-//     }
-//   }
-
-//   // Fallback for when the above HTTP request fails.
-//   return Locations.fromJson(
-//     json.decode(
-//       await rootBundle.loadString('assets/valenbisiLoc.json'),
-//     ) as Map<String, dynamic>,
-//   );
-// }
+  // Fallback for when the above HTTP request fails.
+  return Stations.fromJson(
+    json.decode(
+      await rootBundle.loadString('assets/valenbisiLoc.json'),
+    ) as Map<String, dynamic>,
+  );
+}
