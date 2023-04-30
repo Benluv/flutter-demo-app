@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'src/locations.dart' as locations;
-import 'src/valenbisiLoc.dart' as valenbisiLoc;
+import 'package:geolocator/geolocator.dart';
 
-import 'main.dart';
+import 'src/valenbisiLoc.dart' as valen_bisi_loc;
 
 class MyMapPage extends StatefulWidget {
   @override
@@ -14,7 +13,8 @@ class _MyMapPageState extends State<MyMapPage> {
   final Map<String, Marker> _markers = {};
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
-    final valenBisi = await valenbisiLoc.getValenBisi();
+    final valenBisi = await valen_bisi_loc.getValenBisi();
+
     setState(() {
       _markers.clear();
       for (final station in valenBisi.features) {
@@ -40,19 +40,68 @@ class _MyMapPageState extends State<MyMapPage> {
         colorSchemeSeed: Colors.green[700],
       ),
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Maps Sample App'),
-          elevation: 2,
-        ),
-        body: GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: const CameraPosition(
-            target: LatLng(0, 0),
-            zoom: 2.0,
+          appBar: AppBar(
+            title: const Text('Maps Sample App'),
+            elevation: 2,
           ),
-          markers: _markers.values.toSet(),
-        ),
-      ),
+          body: GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: const CameraPosition(
+              target: LatLng(40.416775, -3.703790),
+              zoom: 16.0,
+            ),
+            myLocationEnabled: true,
+            myLocationButtonEnabled: true,
+            markers: _markers.values.toSet(),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _determinePosition(),
+            tooltip: 'Current Location',
+            child: const Icon(Icons.my_location),
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat),
     );
   }
+}
+
+/// Determine the current position of the device.
+///
+/// When the location services are not enabled or permissions
+/// are denied the `Future` will return an error.
+Future<Position> _determinePosition() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+  // Test if location services are enabled.
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    // Location services are not enabled don't continue
+    // accessing the position and request users of the
+    // App to enable the location services.
+    return Future.error('Location services are disabled.');
+  }
+
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      // Permissions are denied, next time you could try
+      // requesting permissions again (this is also where
+      // Android's shouldShowRequestPermissionRationale
+      // returned true. According to Android guidelines
+      // your App should show an explanatory UI now.
+      return Future.error('Location permissions are denied');
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    // Permissions are denied forever, handle appropriately.
+    return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.');
+  }
+
+  // When we reach here, permissions are granted and we can
+  // continue accessing the position of the device.
+  return await Geolocator.getCurrentPosition();
 }
