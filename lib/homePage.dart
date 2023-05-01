@@ -38,6 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
             SafeArea(
               child: NavigationRail(
                 extended: constraints.maxWidth >= 600,
+                labelType: NavigationRailLabelType.selected,
                 destinations: [
                   NavigationRailDestination(
                     icon: Icon(Icons.home),
